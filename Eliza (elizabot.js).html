@@ -1,0 +1,239 @@
+
+<!-- saved from url=(0032)http://www.masswerk.at/elizabot/ -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+	<title>Eliza (elizabot.js)</title>
+	<script language="JavaScript" type="text/javascript" src="./Eliza (elizabot.js)_files/elizabot.js"></script>
+	<script language="JavaScript" type="text/javascript" src="./Eliza (elizabot.js)_files/elizadata.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+<!--
+
+var eliza = new ElizaBot();
+var elizaLines = new Array();
+
+var displayCols = 60;
+var displayRows = 20;
+
+function elizaReset() {
+	eliza.reset();
+	elizaLines.length = 0;
+	elizaStep();
+}
+
+function elizaStep() {
+	var f = document.forms.e_form;
+	var userinput = f.e_input.value;
+	if (eliza.quit) {
+		f.e_input.value = '';
+		if (confirm("This session is over.\nStart over?")) elizaReset();
+		f.e_input.focus();
+		return;
+	}
+	else if (userinput != '') {
+		var usr = 'YOU:   ' + userinput;
+		var rpl ='ELIZA: ' + eliza.transform(userinput);
+		elizaLines.push(usr);
+		elizaLines.push(rpl);
+		// display nicely
+		// (fit to textarea with last line free - reserved for extra line caused by word wrap)
+		var temp  = new Array();
+		var l = 0;
+		for (var i=elizaLines.length-1; i>=0; i--) {
+			l += 1 + Math.floor(elizaLines[i].length/displayCols);
+			if (l >= displayRows) break
+			else temp.push(elizaLines[i]);
+		}
+		elizaLines = temp.reverse();
+		f.e_display.value = elizaLines.join('\n');
+	}
+	else if (elizaLines.length == 0) {
+		// no input and no saved lines -> output initial
+		var initial = 'ELIZA: ' + eliza.getInitial();
+		elizaLines.push(initial);
+		f.e_display.value = initial + '\n';
+	}
+	f.e_input.value = '';
+	f.e_input.focus();
+}
+
+//-->
+</script>
+</head>
+
+<body topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0" marginheight="0" marginwidth="0" style="border:0" onload="window.setTimeout(&#39;elizaReset()&#39;,100)"><a name="top"></a>
+
+<center>
+<p>&nbsp;</p>
+<h3>Eliza</h3>
+<table border="0" cellspacing="10" cellpadding="0">
+<form name="e_form" onsubmit="elizaStep();return false"></form>
+<tbody><tr><td colspan="2"><textarea name="e_display" cols="60" rows="20"></textarea></td></tr>
+<tr valign="middle">
+	<td><input type="text" name="e_input" size="50"></td>
+	<td align="right"><input type="submit" value=" Talk "> <input type="reset" value="Reset" onclick="window.setTimeout(&#39;elizaReset()&#39;,100)"></td>
+</tr>
+
+</tbody></table>
+</center>
+
+<p>&nbsp;</p>
+<p align="center">For a comfortable terminal-like interface see the <a href="http://www.masswerk.at/elizabot/eliza.html">ELIZA-Terminal</a>.</p>
+<p align="center">For a modern interface (featuring speech I/O) see <a href="http://www.masswerk.at/eliza/">E.L.I.Z.A. Talking</a>.</p>
+<p>&nbsp;</p>
+<table border="0" cellspacing="12" cellpaddding="0">
+<tbody><tr><td colspan="2">
+ELIZA is a natural language conversation program described by Joseph Weizenbaum in January 1966 <a href="http://www.masswerk.at/elizabot/#ELIZA">[1]</a>.<br>
+It features the dialog between a human user and a computer program representing a mock Rogerian psychotherapist.<br>
+The original program was implemented on the IBM 7094 of the Project MAC time-sharing system at MIT and was written in MAD-SLIP.<br><br>
+This is how Joseph Weizenbaum discussed his choice for a conversation model as it would be found in psychotherapist's session:
+<blockquote>
+At this writing, the only serious ELIZA scripts which exist are some which cause
+ELIZA to respond roughly as would certain psychotherapists (Rogerians). ELIZA
+performs best when its human correspondent is initially instructed to
+"talk" to it, via the typewriter of course, just as one would to a
+psychiatrist. This mode of conversation was chosen because the psychiatric
+interview is one of the few examples of categorized dyadic natural language
+communication in which one of the participating pair is free to assume the pose
+of knowing almost nothing of the real world. If, for example, one were to tell a
+psychiatrist "I went for a long boat ride" and he responded "Tell
+me about boats", one would not assume that he knew nothing about boats, but
+that he had some purpose in so directing the subsequent conversation. It is
+important to note that this assumption is one made by the speaker. Whether it is
+realistic or not is an altogether separate question. In any case, it has a
+crucial psychological utility in that it serves the speaker to maintain his
+sense of being heard and understood. The speaker furher defends his impression
+(which even in real life may be illusory) by attributing to his conversational
+partner all sorts of background knowledge, insights and reasoning ability. But
+again, these are the <em>speaker's</em> contribution to the conversation.
+</blockquote>
+For a conversation example given by Joseph Weizenbaum in his article see the <a href="http://www.masswerk.at/elizabot/eliza_test.html">Eliza Test</a> page.
+</td></tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td colspan="2">
+	<h3>About elizabot.js</h3>
+	<p>"elizabot.js" is an object oriented JavaScript library for [multiple] instances of the Eliza program.</p>
+	<pre style="line-height: 120%;">Synopsis:
+
+         new ElizaBot( <i>&lt;random-choice-disable-flag&gt;</i> )
+         ElizaBot.prototype.transform( <i>&lt;inputstring&gt;</i> )
+         ElizaBot.prototype.getInitial()
+         ElizaBot.prototype.getFinal()
+         ElizaBot.prototype.reset()
+
+Usage:
+
+         var eliza = new ElizaBot();
+         var initial = eliza.getInitial();
+         var reply = eliza.transform(inputstring);
+         if (eliza.quit) {
+             <span style="color: #303030">// last user input was a quit phrase</span>
+         }
+
+         <span style="color: #303030">// method `transform()' returns a final phrase in case of a quit phrase
+         // but you can also get a final phrase with:</span>
+         var final = eliza.getFinal();
+
+         <span style="color: #303030">// other methods: reset memory and internal state</span>
+         eliza.reset();
+
+         <span style="color: #303030">// to set the internal memory size override property `memSize':</span>
+         eliza.memSize = 100; <span style="color: #303030">// (default: 20)</span>
+
+         <span style="color: #303030">// to reproduce the example conversation given by J. Weizenbaum
+         // initialize with the optional random-choice-disable flag</span>
+         var originalEliza = new ElizaBot(true);
+
+</pre>
+	<p>As ElizaBot is a totally self-contained object and instances use their own internal memory it's possible to have multiple instances of the ElizaBot object talking to each other.</p>
+	<p>ElizaBot is also a general chatbot engine that can be supplied with any rule set.</p>
+
+<pre style="line-height: 120%;">Data Structures (cf: "elizadata.js"):
+
+         elizaInitials ......... Array of initial phrases
+         elizaFinals  .......... Array of final phrases
+         elizaQuits ............ Array of quit phrases
+         elizaPres ............. Array of alternating name value pairs for preprocessing
+         elizaPosts ............ Array of alternating name value pairs for postprocessing
+         elizaSynons ........... Object of words and their synonyms (as array)
+         elizaPostTransforms ... regexp/replacement pairs to be performed as final cleanings
+         elizaKeywords ......... Array of keywords with decompositions and reasemblies
+
+         elizaKeywords elements are of:
+       
+         ["&lt;key&gt;", &lt;rank&gt;,
+           [
+             [ <span style="color: #303030">// first decomposition pattern</span>
+               "&lt;decomp&gt;",
+               ["&lt;reasmb&gt;", "&lt;reasmb&gt;", "&lt;reasmb&gt;"]
+             ],
+             [ <span style="color: #303030">// second decomposition pattern</span>
+               "&lt;decomp&gt;",
+               ["&lt;reasmb&gt;", "&lt;reasmb&gt;", "&lt;reasmb&gt;"]
+             ]
+           ]
+         ]
+
+         keywords with higher rank take precedence.
+         decompositions are matched in definition order.
+         reasemblies are chosen by random or cycled through if the no-random flag ist set.
+ 
+         the special keyword "xnone" holds the rules for default phrases (no match).
+         
+         decomposition and reasembly syntax follow the "canonical" form:
+
+         decomposition:
+           * ... any words (incl. none)
+           $ ... (in first position) reassemble for memory only
+           @synon ... substitute entry with synononym expression
+
+         reassembly:
+           (n) ... insert param of position n (first is "1")
+                   positions are any matchings of "*" or "@synon"
+
+         pres, posts, synonyms, keywords, decompositions all in lower case.
+         all definitions are optional but at least elizaKeywords should be supplied.
+         if no keywords are found `transform()' returns the default string:
+         "I am at a loss for words.".
+
+Note:   "elizaPostTransforms" is not a standard ELIZA feature and was included to provide
+         a smoothing mechanism for any productions of a bot-to-bot conversation.
+
+</pre>
+	<p>Data representations and syntax follow the "canonical" form.<br>
+	(Since all data is transformed to and matched as regular expressions, you could also use regexps in the keywords and decompositions. Do not use any "*" expressions in decomposition patterns as "*" will be transformed to a regexp-pattern itself.)<br>
+	The structure of "elizaKeywords" follows the internal data model as described by J. Weizenbaum in his article <a href="http://www.masswerk.at/elizabot/#ELIZA">[1]</a>.</p>
+ 
+	<p>&nbsp;<br>
+	"elizabot.js" by © Norbert Landsteiner 2005;<br>
+	mass:werk – media environments &lt;<a href="http://www.masswerk.at/" target="_blank">http://www.masswerk.at</a>&gt;.</p>
+	<p>Distribution:<br>
+	"elizabot.js" is free software and provided "as is".
+	It is distributed in the hope that it will be useful,
+    but without any warranty; without even the implied warranty of
+    merchantability or fitness for a particular purpose.</p>
+    <p>Compatibility:<br>
+    "elizabot.js" should be compatible to most browsers with support of RegExp (that is all standard browsers).<br>
+   (Version 1.1 doesn't require the support of lambda functions in RegExps any more.)</p>
+	
+</td></tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td colspan="2"><b>Download</b>: <a href="http://www.masswerk.at/elizabot/elizabot.zip">elizabot.zip</a> &nbsp;<small>(ZIP file, 15 KB incl. documentation)</small></td></tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td colspan="2">References:</td></tr>
+<tr valign="top">
+<td><a name="ELIZA"></a>[1]</td>
+<td>
+    Weizenbaum, Joseph "ELIZA – A Computer Program For the Study of Natural Language
+    Communication Between Man and Machine"<br>
+    in: Communications of the ACM; Volume 9 , Issue 1 (January 1966): p 36-45.
+</td>
+</tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td colspan="2"><small>&gt; <a href="http://www.masswerk.at/elizabot/#top">top of page</a></small></td></tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td colspan="2" style="font-family: arial,helvetica,sans-serif; font-size: 12px;">N. Landsteiner 2005; &lt;<a href="http://www.masswerk.at/" target="_blank">http://www.masswerk.at</a>&gt;</td></tr>
+<tr><td colspan="2">&nbsp;</td></tr>
+</tbody></table>
+
+
+</body></html>
